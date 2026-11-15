@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:PiliPlus/common/style.dart';
-import 'package:PiliPlus/common/widgets/floating_navigation_bar.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/glass/liquid_navigation_bar.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
@@ -153,54 +152,52 @@ class _MainAppState extends PopScopeState<MainApp>
   Widget? get _bottomNav {
     Widget? bottomNav;
     if (_mainController.navigationBars.length > 1) {
-      if (_mainController.floatingNavBar) {
-        bottomNav = Obx(
-          () => FloatingNavigationBar(
-            onDestinationSelected: _mainController.setIndex,
-            selectedIndex: _mainController.selectedIndex.value,
-            destinations: _mainController.navigationBars
-                .map(
-                  (e) => FloatingNavigationDestination(
-                    label: e.label,
-                    icon: _buildIcon(type: e),
-                    selectedIcon: _buildIcon(type: e, selected: true),
-                  ),
-                )
-                .toList(),
-          ),
-        );
-      } else if (_mainController.enableMYBar) {
+      if (_mainController.enableMYBar) {
         bottomNav = Obx(
           () => Padding(
-            // Floating capsule: keep it off the screen edges and clear of the
-            // system navigation bar.
+            // Keep the capsule off the screen edges and clear of the system
+            // navigation bar. The old "floating bar" preference now means a
+            // narrower, centred pill rather than a different widget: its own
+            // implementation looked worse than this one.
             padding: EdgeInsets.only(
               left: 8,
               right: 8,
               bottom: MediaQuery.viewPaddingOf(context).bottom + 8,
             ),
-            child: LiquidNavigationBar(
-              destinations: _mainController.navigationBars
-                  .map(
-                    (e) => LiquidNavDestination(
-                      label: e.label,
-                      icon: _buildIcon(type: e),
-                      selectedIcon: _buildIcon(type: e, selected: true),
-                    ),
-                  )
-                  .toList(),
-              selectedIndex: _mainController.selectedIndex.value,
-              onDestinationSelected: _mainController.setIndex,
-              trailing: Pref.searchInBottomBar
-                  ? LiquidNavAction(
-                      icon: const Icon(
-                        Icons.search_outlined,
-                        semanticLabel: '搜索',
-                      ),
-                      tooltip: '搜索',
-                      onPressed: () => Get.toNamed('/search'),
-                    )
-                  : null,
+            child: Center(
+              heightFactor: 1,
+              child: ConstrainedBox(
+                // The old "floating bar" preference now only narrows the
+                // capsule; the widget is the same glass bar either way.
+                constraints: BoxConstraints(
+                  maxWidth: _mainController.floatingNavBar
+                      ? 420
+                      : double.infinity,
+                ),
+                child: LiquidNavigationBar(
+                  destinations: _mainController.navigationBars
+                      .map(
+                        (e) => LiquidNavDestination(
+                          label: e.label,
+                          icon: _buildIcon(type: e),
+                          selectedIcon: _buildIcon(type: e, selected: true),
+                        ),
+                      )
+                      .toList(),
+                  selectedIndex: _mainController.selectedIndex.value,
+                  onDestinationSelected: _mainController.setIndex,
+                  trailing: Pref.searchInBottomBar
+                      ? LiquidNavAction(
+                          icon: const Icon(
+                            Icons.search_outlined,
+                            semanticLabel: '搜索',
+                          ),
+                          tooltip: '搜索',
+                          onPressed: () => Get.toNamed('/search'),
+                        )
+                      : null,
+                ),
+              ),
             ),
           ),
         );
