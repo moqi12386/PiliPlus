@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/glass/glass_config.dart';
 import 'package:PiliPlus/common/widgets/glass/glass_frost.dart';
+import 'package:PiliPlus/common/widgets/glass/liquid_glass.dart';
 import 'package:PiliPlus/common/widgets/glass/glass_style.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
@@ -204,7 +205,7 @@ class _SettingPageState extends State<SettingPage> {
     TextStyle subTitleStyle = theme.textTheme.labelMedium!.copyWith(
       color: theme.colorScheme.outline,
     );
-    return ListView(
+    final list = ListView(
       padding: EdgeInsets.only(top: glassTop, bottom: padding.bottom + 100),
       children: [
         _buildSearchItem(theme),
@@ -242,6 +243,25 @@ class _SettingPageState extends State<SettingPage> {
           title: Text(_items.last.type.title, style: titleStyle),
         ),
       ],
+    );
+
+    if (!GlassConfig.enabled) {
+      return list;
+    }
+    // One frosted panel for the whole list instead of a backdrop filter per row:
+    // a single capture, and the wallpaper still shows around the edges.
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+      child: LiquidGlass(
+        style: GlassStyle.regular.copyWith(
+          blurSigma: 20,
+          refractionHeight: 0,
+          dispersion: 0,
+          tint: theme.colorScheme.surface.withValues(alpha: 0.55),
+        ),
+        borderRadius: const BorderRadius.all(Radius.circular(18)),
+        child: list,
+      ),
     );
   }
 
