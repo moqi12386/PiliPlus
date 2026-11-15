@@ -1,0 +1,64 @@
+diff --git a/lib/src/bottom_sheet.dart b/lib/src/bottom_sheet.dart
+index a74ca7b..cd96de2 100644
+--- a/lib/src/bottom_sheet.dart
++++ b/lib/src/bottom_sheet.dart
+@@ -6,7 +6,7 @@
+ library;
+ 
+ import 'dart:math' as math;
+-import 'dart:ui' show SemanticsHitTestBehavior;
++import 'dart:ui' show ImageFilter, SemanticsHitTestBehavior, TileMode;
+ 
+ import 'package:flutter/foundation.dart';
+ import 'package:flutter/gestures.dart';
+@@ -392,11 +392,20 @@ class _BottomSheetState<T extends BottomSheet> extends State<T> {
+       }
+     }
+ 
++    // A fully transparent surface tint asks for a liquid glass sheet. Without
++    // this patch the same theme value is merely a no-op tint.
++    final bool glass =
++        surfaceTintColor != null &&
++        surfaceTintColor.a == 0.0 &&
++        widget.surfaceTintColor == null;
++
+     Widget bottomSheet = Material(
+       key: _childKey,
+-      color: color,
+-      elevation: elevation,
+-      surfaceTintColor: surfaceTintColor,
++      color: glass
++          ? (color ?? const Color(0xFFFFFFFF)).withValues(alpha: 0.72)
++          : color,
++      elevation: glass ? 0 : elevation,
++      surfaceTintColor: glass ? Colors.transparent : surfaceTintColor,
+       shadowColor: shadowColor,
+       shape: shape,
+       clipBehavior: clipBehavior,
+@@ -417,6 +426,26 @@ class _BottomSheetState<T extends BottomSheet> extends State<T> {
+       ),
+     );
+ 
++    if (glass) {
++      // Blur the page behind the sheet, clipped to the sheet's own shape so the
++      // blur cannot bleed past its rounded corners.
++      bottomSheet = ClipPath(
++        clipper: ShapeBorderClipper(
++          shape:
++              shape ??
++              defaults.shape ??
++              const RoundedRectangleBorder(
++                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
++              ),
++          textDirection: Directionality.maybeOf(context),
++        ),
++        child: BackdropFilter(
++          filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22, tileMode: TileMode.clamp),
++          child: bottomSheet,
++        ),
++      );
++    }
++
+     if (constraints != null) {
+       bottomSheet = Align(
+         alignment: Alignment.bottomCenter,

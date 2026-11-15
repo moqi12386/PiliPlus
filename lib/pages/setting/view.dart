@@ -1,5 +1,8 @@
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
+import 'package:PiliPlus/common/widgets/glass/glass_config.dart';
+import 'package:PiliPlus/common/widgets/glass/glass_frost.dart';
+import 'package:PiliPlus/common/widgets/glass/glass_style.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/http/login.dart';
@@ -12,6 +15,7 @@ import 'package:PiliPlus/pages/webdav/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -107,10 +111,32 @@ class _SettingPageState extends State<SettingPage> {
 
   @override
   Widget build(BuildContext context) {
+    // With glass on, the list runs underneath the app bar and the bar blurs it.
+    // The list compensates with top padding (see _buildList), so this stays a
+    // pure chrome change.
+    final glass = GlassConfig.enabled;
+    final title = _isPortrait ? const Text('设置') : Text(_type.title);
     return SimpleScaffold(
-      appBar: AppBar(
-        title: _isPortrait ? const Text('设置') : Text(_type.title),
-      ),
+      bodyBehindAppBar: glass,
+      appBar: glass
+          ? GlassFrost(
+              style: GlassStyle.appBar.copyWith(
+                tint: GlassConfig.tint(context),
+              ),
+              child: AppBar(
+                backgroundColor: Colors.transparent,
+                surfaceTintColor: Colors.transparent,
+                elevation: 0,
+                scrolledUnderElevation: 0,
+                // A transparent background would otherwise leave AppBar guessing
+                // the status bar icon brightness from nothing.
+                systemOverlayStyle: theme.brightness == Brightness.dark
+                    ? SystemUiOverlayStyle.light
+                    : SystemUiOverlayStyle.dark,
+                title: title,
+              ),
+            )
+          : AppBar(title: title),
       body: ViewSafeArea(
         child: _isPortrait
             ? _buildList(theme)
@@ -172,12 +198,14 @@ class _SettingPageState extends State<SettingPage> {
 
   Widget _buildList(ThemeData theme) {
     final padding = MediaQuery.viewPaddingOf(context);
+    // The list scrolls behind the glass app bar, so it starts below it instead.
+    final glassTop = GlassConfig.enabled ? kToolbarHeight + padding.top : 0.0;
     TextStyle titleStyle = theme.textTheme.titleMedium!;
     TextStyle subTitleStyle = theme.textTheme.labelMedium!.copyWith(
       color: theme.colorScheme.outline,
     );
     return ListView(
-      padding: EdgeInsets.only(bottom: padding.bottom + 100),
+      padding: EdgeInsets.only(top: glassTop, bottom: padding.bottom + 100),
       children: [
         _buildSearchItem(theme),
         ..._items

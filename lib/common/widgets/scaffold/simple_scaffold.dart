@@ -10,12 +10,21 @@ class SimpleScaffold extends StatelessWidget {
     this.backgroundColor,
     this.fab,
     this.appBar,
+    this.bodyBehindAppBar = false,
     required this.body,
   });
 
   final Color? backgroundColor;
   final Widget? fab;
   final Widget? appBar;
+
+  /// Lays [body] out at full height, underneath [appBar], and paints the app bar
+  /// above it. Content then scrolls behind the app bar, which is what makes a
+  /// translucent / blurred app bar readable. The page must add the app bar
+  /// height as top padding on its own scrollable, or its first rows will be
+  /// hidden underneath.
+  final bool bodyBehindAppBar;
+
   final Widget body;
 
   @override
@@ -25,6 +34,7 @@ class SimpleScaffold extends StatelessWidget {
       child: ScaffoldLayout(
         fab: fab,
         appBar: appBar,
+        bodyBehindAppBar: bodyBehindAppBar,
         body: body,
       ),
     );
@@ -39,11 +49,13 @@ class ScaffoldLayout
     super.key,
     this.fab,
     this.appBar,
+    this.bodyBehindAppBar = false,
     required this.body,
   });
 
   final Widget? fab;
   final Widget? appBar;
+  final bool bodyBehindAppBar;
   final Widget body;
 
   @override
@@ -60,7 +72,16 @@ class ScaffoldLayout
   SlottedContainerRenderObjectMixin<ScaffoldType, RenderBox> createRenderObject(
     BuildContext context,
   ) {
-    return _RenderScaffoldLayout();
+    return _RenderScaffoldLayout(bodyBehindAppBar: bodyBehindAppBar);
+  }
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    SlottedContainerRenderObjectMixin<ScaffoldType, RenderBox> renderObject,
+  ) {
+    // Cast keeps the concrete render object type private.
+    (renderObject as _RenderScaffoldLayout).bodyBehindAppBar = bodyBehindAppBar;
   }
 }
 
@@ -68,6 +89,10 @@ class _RenderScaffoldLayout extends RenderBox
     with
         SlottedContainerRenderObjectMixin<ScaffoldType, RenderBox>,
         SlottedLayoutMixin {
+  _RenderScaffoldLayout({required this.bodyBehindAppBar});
+
+  bool bodyBehindAppBar;
+
   RenderBox? get fab => childForSlot(.fab);
   RenderBox? get appBar => childForSlot(.appBar);
   RenderBox get body => childForSlot(.body)!;
@@ -91,11 +116,16 @@ class _RenderScaffoldLayout extends RenderBox
       ).height;
       setOffset(appBar, .zero);
 
-      bodyOffset = Offset(0, appBarHeight);
-      bodyConstraints = BoxConstraints.tightFor(
-        width: constraints.maxWidth,
-        height: math.max(constraints.maxHeight - appBarHeight, 0.0),
-      );
+      if (bodyBehindAppBar) {
+        bodyOffset = .zero;
+        bodyConstraints = constraints;
+      } else {
+        bodyOffset = Offset(0, appBarHeight);
+        bodyConstraints = BoxConstraints.tightFor(
+          width: constraints.maxWidth,
+          height: math.max(constraints.maxHeight - appBarHeight, 0.0),
+        );
+      }
     } else {
       bodyOffset = .zero;
       bodyConstraints = constraints;
@@ -125,8 +155,15 @@ class _RenderScaffoldLayout extends RenderBox
       }
     }
 
-    doPaint(appBar);
-    doPaint(body);
+    if (bodyBehindAppBar) {
+      // The body owns the whole area now, so it has to go first for the app bar
+      // (and the blur it captures) to stay on top.
+      doPaint(body);
+      doPaint(appBar);
+    } else {
+      doPaint(appBar);
+      doPaint(body);
+    }
     doPaint(fab);
   }
 }

@@ -46,7 +46,8 @@ try {
         'refresh_indicator.patch',
         'tabs.patch',
         'glass_popup_menu.patch',
-        'bottom_sheet_android.patch'
+        'bottom_sheet_android.patch',
+        'glass_bottom_sheet.patch'
     )
 
     $failed = @()

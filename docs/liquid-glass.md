@@ -214,11 +214,58 @@ LiquidGlass(
 | 首页搜索条 | `lib/pages/home/view.dart` | 44 高的胶囊玻璃，替换原来的 5% 半透明填充 |
 | 确认弹窗 | `lib/common/widgets/dialog/dialog.dart` | `AlertDialog` 背景透明 + 玻璃容器 |
 | 播放器控制层 | `lib/plugin/pl_player/widgets/app_bar_ani.dart` | 渐变遮罩下加磨砂背板（`GlassFrost`） |
-| 所有弹出菜单 | `lib/scripts/material/glass_popup_menu.patch` + `lib/utils/theme_utils.dart` | 框架层一次性覆盖全部 `showMenu` |
+| 弹出菜单 | `lib/scripts/material/glass_popup_menu.patch` + `lib/utils/theme_utils.dart` | 框架层一次性覆盖全部 `showMenu` |
+| 底部弹层 | `lib/scripts/material/glass_bottom_sheet.patch` + `lib/utils/theme_utils.dart` | 框架层覆盖所有 `showModalBottomSheet` |
+| 标题栏（设置页） | `lib/pages/setting/view.dart` | 列表从栏下滚过，标题栏磨砂 |
+| 标题栏（搜索页） | `lib/pages/search/view.dart` | 建议/历史从栏下滚过 |
 | 设置开关 | `lib/pages/setting/models/style_settings.dart` | 外观设置里的「液态玻璃」开关 |
 
 开关持久化键：`SettingBoxKey.liquidGlass`（默认 `true`），由 `main.dart` 在首帧前读入
 `GlassConfig.enabled`，并预编译两个着色器。
+
+### 6.1 标题栏：为什么要动布局
+
+标题栏要玻璃，前提是「背后有东西」。而 `SimpleScaffold` 的自绘布局
+（`lib/common/widgets/scaffold/simple_scaffold.dart`）原本是这么排的：
+
+```
+performLayout: bodyOffset = (0, appBarHeight)   // body 从栏下面开始
+paint:         appBar → body                    // 栏先画
+```
+
+body 在栏下方、且栏先画，所以背后永远是空的。为此给 `SimpleScaffold` 加了
+`bodyBehindAppBar`：
+
+- `performLayout`：body 拿满屏约束、偏移归零；
+- `paint`：顺序翻转为 body → appBar（否则 body 会盖住栏）；
+- **页面自己负责给可滚动内容加顶部内边距**，否则首行会被栏压住。
+
+后一条是这个方案的代价：没法在渲染层通用地解决，因为「从哪里开始算内容」只有页面自己
+知道。目前只给两个页面接上：
+
+```dart
+// 设置页
+SimpleScaffold(
+  bodyBehindAppBar: GlassConfig.enabled,
+  appBar: GlassFrost(child: AppBar(backgroundColor: Colors.transparent, ...)),
+  body: ...,
+);
+
+// 列表补偿（两处都必须成对出现）
+padding: EdgeInsets.only(top: kToolbarHeight + MediaQuery.viewPaddingOf(context).top)
+```
+
+要注意的三个细节：
+
+1. `AppBar` 在全透明背景下会**猜**状态栏图标亮度，必须显式给
+   `systemOverlayStyle`，否则浅色主题下可能出现白图标压浅色内容。
+2. 顶部内边距用 `kToolbarHeight + viewPadding.top`，与 `AppBar` 自身高度
+   （工具栏 + 状态栏）对齐；`ViewSafeArea` 默认 `top: false`，不会重复加。
+3. 整个开关受 `GlassConfig.enabled` 控制：**关掉玻璃时 `bodyBehindAppBar` 为
+   false，布局回到原样**，不存在"关了玻璃但排版还是坏的"的情况。
+
+其余 90 多个 `SimpleScaffold` 页面仍走原布局；要把它们玻璃化，就是「翻开关 + 给列表加
+顶部内边距」这两步，但每页的滚动容器不同，需要逐页确认，不适合盲改。
 
 ### 6.1 弹出菜单为什么走「框架补丁」
 
@@ -292,6 +339,11 @@ flutter test test/glass/liquid_glass_shader_test.dart
 > 说明：`flutter test` 走 Skia，而 `ImageFilter.shader` 仅 Impeller 支持，所以测试把
 > 着色器当作普通 `Paint.shader` 驱动 —— 被验证的是着色器数学本身，滤镜挂载部分由真机
 > 构建验证。
+>
+> 另外，本项目**跑不了应用级 widget 测试**：media_kit 的原生资产构建钩子要求本机有
+> C/Android 工具链（`flutter test` 会直接报 `No compiler configured on host`，关掉
+> native-assets 则被依赖拒绝）。所以"布局类"改动（如第 6.1 节的标题栏）在本机只能靠
+> 静态分析 + 几何推算，最终由云端 APK 构建兜住编译错误，观感需要在真机上确认。
 
 `GLASS_DUMP=1 flutter test ...` 会把渲染结果导出到 `glass_out/*.png` 便于肉眼比对。
 
@@ -302,9 +354,13 @@ flutter test test/glass/liquid_glass_shader_test.dart
 - **折射依赖 Impeller**，默认配置下呈现磨砂玻璃（见第 4 节）。
 - **每个玻璃面 = 一次背板捕获**。滚动列表里密集铺玻璃会明显吃 GPU，因此只用在
   「浮在内容之上」的固定元件，没有铺到列表卡片上。
-- 顶栏（`AppBar`）暂未玻璃化：它需要所在页面开启 `extendBodyBehindAppBar` 才有内容
-  可以从背后滚过，属于逐页改动，留给后续迭代。
-- 播放器控制层同理（视频纹理上做实时模糊的开销与兼容性需要真机评估），目前保留原有
-  渐变遮罩。
+- **标题栏只接了设置页和搜索页**（第 6.1 节）：其余页面需要各自给滚动容器加顶部内边距，
+  没法在渲染层通用解决。
+- **卡片与设置项没有单独做玻璃**：App 背景是纯色平铺，背后无内容可折射，玻璃只会变成
+  「换个底色」。要让它有意义，得先有背景图/壁纸类功能。
+- 播放器控制层用的是磨砂（`GlassFrost`）而非折射：视频纹理上做实时透镜的开销与兼容性
+  需要真机评估，因此保留原有渐变遮罩叠加模糊。
 - 圆角目前统一按 `BorderRadius` 处理，原实现的超椭圆（superellipse）只在悬浮底栏的
   描边上保留，SDF 仍按普通圆角计算。
+- 底部弹层的玻璃补丁**只在 android 平台上应用**（自定义底栏补丁本身分平台），
+  iOS/桌面仍为原样式。

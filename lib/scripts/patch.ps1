@@ -218,6 +218,9 @@ $TabsPatchMaterial = "lib/scripts/material/tabs.patch"
 # $PopupMenuPatchMaterial, because its hunks are diffed against that state.
 $GlassPopupMenuPatchMaterial = "lib/scripts/material/glass_popup_menu.patch"
 
+# liquid glass bottom sheets, applied after the android bottom sheet patch.
+$GlassBottomSheetPatchMaterial = "lib/scripts/material/glass_bottom_sheet.patch"
+
 $patches_material = @($ModalBarrierPatchMaterial, $NavigationDrawerPatchMaterial, $PopupMenuPatchMaterial,
                     $FABPatchMaterial, $TextFieldPatchMaterial, $ScaffoldPatchMaterial, $RefreshIndicatorPatchMaterial,
                     $TabsPatchMaterial, $GlassPopupMenuPatchMaterial)
@@ -227,6 +230,10 @@ $PubCacheDir = "~/.pub-cache"
 switch ($platform.ToLower()) {
     "android" {
         $patches_material += $BottomSheetAndroidPatchMaterial
+        # Diffed against bottom_sheet.dart with the android patch applied, so it
+        # has to come last. A fully transparent surfaceTintColor in the app theme
+        # asks for a blurred backdrop behind the sheet.
+        $patches_material += $GlassBottomSheetPatchMaterial
     }
     "ios" {
         $patches_material += $BottomSheetIOSFlutterMaterialPatchMaterial

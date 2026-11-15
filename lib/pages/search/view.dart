@@ -2,6 +2,9 @@ import 'dart:convert';
 
 import 'package:PiliPlus/common/widgets/dialog/export_import.dart';
 import 'package:PiliPlus/common/widgets/disabled_icon.dart';
+import 'package:PiliPlus/common/widgets/glass/glass_config.dart';
+import 'package:PiliPlus/common/widgets/glass/glass_frost.dart';
+import 'package:PiliPlus/common/widgets/glass/glass_style.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/sliver_wrap.dart';
@@ -56,12 +59,39 @@ class _SearchPageState extends State<SearchPage> {
         : null;
 
     return SimpleScaffold(
-      appBar: _buildAppBar,
+      // Glass: the result column scrolls underneath a blurred app bar instead of
+      // starting below it. The spacer sliver below keeps the first rows clear.
+      bodyBehindAppBar: GlassConfig.enabled,
+      appBar: GlassConfig.enabled
+          ? GlassFrost(
+              style: GlassStyle.appBar.copyWith(
+                tint: GlassConfig.tint(context),
+              ),
+              child: Theme(
+                data: Theme.of(context).copyWith(
+                  appBarTheme: Theme.of(context).appBarTheme.copyWith(
+                    backgroundColor: Colors.transparent,
+                    surfaceTintColor: Colors.transparent,
+                    elevation: 0,
+                    scrolledUnderElevation: 0,
+                  ),
+                ),
+                child: _buildAppBar,
+              ),
+            )
+          : _buildAppBar,
       body: Padding(
         padding: .only(left: padding.left, right: padding.right),
         child: ViewInsetsSafeArea(
           child: CustomScrollView(
             slivers: [
+              if (GlassConfig.enabled)
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height:
+                        kToolbarHeight + MediaQuery.viewPaddingOf(context).top,
+                  ),
+                ),
               if (_searchController.searchSuggestion) _buildSearchSuggest(),
               if (isPortrait) ...[
                 ?trending,

@@ -124,6 +124,9 @@ abstract final class ThemeUtils {
       ),
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: colorScheme.surface,
+        // Same signal as the popup menu: a fully transparent surface tint asks the
+        // patched material_ui for a blurred sheet backdrop.
+        surfaceTintColor: GlassConfig.enabled ? Colors.transparent : null,
         shape: const RoundedRectangleBorder(
           borderRadius: Style.bottomSheetRadius,
         ),
