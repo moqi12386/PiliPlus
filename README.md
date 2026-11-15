@@ -39,7 +39,7 @@
 - **自定义壁纸**：给玻璃一块可折射的背景（关掉即恢复原样式）
 - **浮层**：弹窗、弹出菜单、底部弹层、播放器控制层；设置页/搜索页标题栏
 - 着色器（折射 / 色散 / 边缘高光）按 Apache-2.0 从原项目移植为 Flutter fragment shader
-- 折射需要 Impeller 渲染后端，默认配置下自动降级为磨砂玻璃
+- 折射需要 Impeller 渲染后端：本 fork 默认开启（`-Pimpeller=false` 可退回磨砂）
 - 包名改为 `com.moqi.piliplus.glass`、桌面名称「PiliPlus 玻璃」，**可与官方版同时安装**对比
 - 技术细节、接入方式与已知限制见 [docs/liquid-glass.md](docs/liquid-glass.md)
 

@@ -181,10 +181,24 @@ uniform float u_rectHeight; // 3
 | 磨砂 | 只有模糊可用 | 模糊背板 + 底色 + 高光 |
 | 纯色 | 关闭开关 / 无法捕获背板 | 主题 surface 色 |
 
-**关于 Impeller**：PiliPlus 在 `AndroidManifest.xml` 中显式关闭了 Impeller
-（`EnableImpeller=false`），因此**默认走「磨砂」模式**。想要真正的透镜折射，需要把该
-开关改为 `true`（见第 7 节）。这不是遗漏，而是刻意保留的降级路径 —— 折射依赖 Impeller，
-而 Impeller 在部分机型上仍有兼容性差异。
+**关于 Impeller**：上游 PiliPlus 在 `AndroidManifest.xml` 里把 Impeller 关掉了
+（`EnableImpeller=false`），而 `ui.ImageFilter.shader` 只在 Impeller 上存在 —— 两者撞在
+一起，就表现为「玻璃只有磨砂、没有折射」。
+
+本 fork 把它改成**由构建参数控制，默认开启**：
+
+```kotlin
+// android/app/build.gradle.kts
+manifestPlaceholders["impellerEnabled"] =
+    (project.findProperty("impeller") ?: "true").toString()
+```
+
+- 默认（CI 构建）：`impellerEnabled=true` → 折射可用；
+- 想退回 Skia：`flutter build apk -Pimpeller=false`，或本地临时把默认值改成 `false`。
+
+这样「观感」和「稳定性」不再是二选一：哪台机器上 Impeller 有问题，就用回退参数重新打包，
+而不是去改一行源码再提交。机型兼容性风险仍然存在（这也是上游关掉它的原因），所以保留了
+磨砂降级路径 —— 引擎不支持时 `LiquidGlass` 自动退到磨砂，不会崩。
 
 `GlassConfig` 提供两个运行期旋钮：
 
@@ -367,18 +381,21 @@ pwsh -File tool/verify_material_patches.ps1   # 见仓库内同名脚本
 
 ---
 
-## 7. 开启真实折射（可选）
+## 7. 切换渲染后端
 
-`android/app/src/main/AndroidManifest.xml`：
+折射需要 Impeller，而本项目默认已开启（见第 4 节）。开关是一行 Gradle 参数：
 
-```xml
-<meta-data
-    android:name="io.flutter.embedding.android.EnableImpeller"
-    android:value="false" />   <!-- 改成 true 即可启用折射 -->
+```bash
+# 默认：Impeller 开，折射可用
+flutter build apk --release
+
+# 退回 Skia：只剩磨砂
+flutter build apk --release -Pimpeller=false
 ```
 
-改完后 `ImageFilter.isShaderFilterSupported` 为 true，`LiquidGlass` 自动切到折射模式，
-无需改任何 UI 代码。若遇到渲染问题，改回 `false` 即退回磨砂模式。
+`ImageFilter.isShaderFilterSupported` 为 false 时 `LiquidGlass` 自动切到磨砂，UI 代码不需要
+任何分支。真遇到渲染异常（花屏、视频层异常等），用上面的 `-Pimpeller=false` 重新打包即可，
+不必改源码。
 
 ---
 
@@ -414,7 +431,7 @@ flutter test test/glass/liquid_glass_shader_test.dart
 
 ## 9. 已知限制
 
-- **折射依赖 Impeller**，默认配置下呈现磨砂玻璃（见第 4 节）。
+- **折射依赖 Impeller**：本 fork 默认开启，可用 `-Pimpeller=false` 退回磨砂（见第 4、7 节）。
 - **每个玻璃面 = 一次背板捕获**。滚动列表里密集铺玻璃会明显吃 GPU，因此只用在
   「浮在内容之上」的固定元件，没有铺到列表卡片上。
 - **标题栏只接了设置页和搜索页**（第 6.1 节）：其余页面需要各自给滚动容器加顶部内边距，

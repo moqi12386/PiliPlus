@@ -33,6 +33,13 @@ android {
         targetSdk = 37
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // Impeller is what makes real refraction possible: ui.ImageFilter.shader
+        // exists only on that backend. Upstream ships it off because of device
+        // quirks, so keep it switchable: -Pimpeller=false falls back to Skia
+        // (frosted glass only).
+        manifestPlaceholders["impellerEnabled"] =
+            (project.findProperty("impeller") ?: "true").toString()
     }
 
     packagingOptions.jniLibs.useLegacyPackaging = true
