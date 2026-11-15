@@ -222,6 +222,7 @@ LiquidGlass(
 | 标题栏（搜索页） | `lib/pages/search/view.dart` | 建议/历史从栏下滚过 |
 | 卡片封面徽标 | `lib/common/widgets/badge.dart` | `PBadge(glass: true)`：时长角标压在图上是磨砂片 |
 | 自定义壁纸 | `lib/common/widgets/glass/wallpaper.dart` | 背景照片 + 主题遮罩，玻璃终于有东西可折射（第 6.3 节） |
+| 设置项 | `lib/pages/setting/view.dart` | 整页列表放在**一块**磨砂面板上，不是每行一个滤镜 |
 | 设置开关 | `lib/pages/setting/models/style_settings.dart` | 液态玻璃 / 搜索栏放在底栏 / 自定义壁纸 |
 
 开关持久化键：`SettingBoxKey.liquidGlass`（默认 `true`），由 `main.dart` 在首帧前读入
