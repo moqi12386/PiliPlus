@@ -213,9 +213,14 @@ $RefreshIndicatorPatchMaterial = "lib/scripts/material/refresh_indicator.patch"
 
 $TabsPatchMaterial = "lib/scripts/material/tabs.patch"
 
+# liquid glass popup menus: a fully transparent surfaceTintColor in the app theme
+# asks the patched popup menu for a blurred backdrop. Must be applied after
+# $PopupMenuPatchMaterial, because its hunks are diffed against that state.
+$GlassPopupMenuPatchMaterial = "lib/scripts/material/glass_popup_menu.patch"
+
 $patches_material = @($ModalBarrierPatchMaterial, $NavigationDrawerPatchMaterial, $PopupMenuPatchMaterial,
                     $FABPatchMaterial, $TextFieldPatchMaterial, $ScaffoldPatchMaterial, $RefreshIndicatorPatchMaterial,
-                    $TabsPatchMaterial)
+                    $TabsPatchMaterial, $GlassPopupMenuPatchMaterial)
 
 $PubCacheDir = "~/.pub-cache"
 

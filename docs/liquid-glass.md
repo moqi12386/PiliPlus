@@ -213,10 +213,47 @@ LiquidGlass(
 | 底部导航（悬浮款） | `lib/common/widgets/floating_navigation_bar.dart` | 超椭圆药丸外层换成玻璃，描边交给玻璃高光 |
 | 首页搜索条 | `lib/pages/home/view.dart` | 44 高的胶囊玻璃，替换原来的 5% 半透明填充 |
 | 确认弹窗 | `lib/common/widgets/dialog/dialog.dart` | `AlertDialog` 背景透明 + 玻璃容器 |
+| 播放器控制层 | `lib/plugin/pl_player/widgets/app_bar_ani.dart` | 渐变遮罩下加磨砂背板（`GlassFrost`） |
+| 所有弹出菜单 | `lib/scripts/material/glass_popup_menu.patch` + `lib/utils/theme_utils.dart` | 框架层一次性覆盖全部 `showMenu` |
 | 设置开关 | `lib/pages/setting/models/style_settings.dart` | 外观设置里的「液态玻璃」开关 |
 
 开关持久化键：`SettingBoxKey.liquidGlass`（默认 `true`），由 `main.dart` 在首帧前读入
 `GlassConfig.enabled`，并预编译两个着色器。
+
+### 6.1 弹出菜单为什么走「框架补丁」
+
+`showMenu` 的菜单表面由 `material_ui` 内部的 `_PopupMenu` 绘制，PiliPlus 侧没有任何
+包装层可以插入 `BackdropFilter`。但本项目**本来就在给 `material_ui` 打补丁**
+（`lib/scripts/material/*.patch`，CI 里 `patch.ps1` 在 `flutter pub get` 之后应用），
+所以这里沿用了同一条通道，一次覆盖全部 8 处 `showMenu` 调用点。
+
+难点是「补丁怎么知道你有没有打开玻璃」。两个包之间不能互相 import（会让 PiliPlus 依赖
+一个只有打补丁后才存在的 API），所以约定了一个**天然无害**的信号：
+
+```dart
+// app 侧（theme_utils.dart）
+surfaceTintColor: GlassConfig.enabled ? Colors.transparent : (...)
+
+// 补丁侧（_PopupMenuState.build）
+final bool glass = glassSignal != null && glassSignal.a == 0.0;
+```
+
+选择 `surfaceTintColor` 而不是 `color` 是关键：如果补丁没被打上，一个全透明的
+`surfaceTintColor` 只是「不加染色」，菜单依然正常；而如果拿全透明的 `color` 当信号，
+补丁缺失时菜单会直接变透明、文字浮在页面上，属于可见故障。
+
+补丁自己只做三件事：把表面色换成 72% 不透明的主题 surface（保证文字对比度）、
+把 elevation 归零、外面套 `ClipPath(ShapeBorderClipper) + BackdropFilter(22)`。
+圆角裁剪必须在模糊之外，否则模糊会溢出菜单的圆角。
+
+补丁文件必须**排在 `popup_menu.patch` 之后**应用（它的 hunk 是针对打过该补丁后的
+文件生成的），`patch.ps1` 里的数组顺序就是这个约束。改动补丁后可用下面的方式从纯净
+包完整复演一遍：
+
+```powershell
+# 下载 material_ui 1.11.0 → git init → 按 CI 顺序 git apply 全部 material 补丁
+pwsh -File tool/verify_material_patches.ps1   # 见仓库内同名脚本
+```
 
 ---
 

@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/style.dart';
+import 'package:PiliPlus/common/widgets/glass/glass_config.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/font_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -90,7 +91,12 @@ abstract final class ThemeUtils {
         ),
       ),
       popupMenuTheme: PopupMenuThemeData(
-        surfaceTintColor: isDark ? colorScheme.surfaceContainerHighest : null,
+        // A fully transparent surface tint asks the patched material_ui for a
+        // liquid glass menu (see lib/scripts/material/glass_popup_menu.patch).
+        // Without the patch it is just a no-op tint.
+        surfaceTintColor: GlassConfig.enabled
+            ? Colors.transparent
+            : (isDark ? colorScheme.surfaceContainerHighest : null),
       ),
       cardTheme: CardThemeData(
         elevation: 1,
