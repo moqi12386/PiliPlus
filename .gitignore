@@ -152,3 +152,6 @@ dist
 test*
 !/test/
 !/test/**
+
+# staging area for tool/vendor_glasslab.ps1 (upstream sources, not vendored output)
+_upstream/
