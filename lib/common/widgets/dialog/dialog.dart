@@ -1,3 +1,6 @@
+import 'package:PiliPlus/common/widgets/glass/glass_config.dart';
+import 'package:PiliPlus/common/widgets/glass/glass_style.dart';
+import 'package:PiliPlus/common/widgets/glass/liquid_glass.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -10,25 +13,32 @@ Future<bool> showConfirmDialog({
 }) async {
   return await showDialog<bool>(
         context: context,
-        builder: (context) => AlertDialog(
-          title: title,
-          content: content,
-          actions: [
-            TextButton(
-              onPressed: Get.back,
-              child: Text(
-                '取消',
-                style: TextStyle(color: ColorScheme.of(context).outline),
+        builder: (context) => LiquidGlass(
+          style: GlassStyle.dialog,
+          borderRadius: const BorderRadius.all(Radius.circular(28)),
+          child: AlertDialog(
+            backgroundColor: GlassConfig.enabled ? Colors.transparent : null,
+            surfaceTintColor: GlassConfig.enabled ? Colors.transparent : null,
+            elevation: GlassConfig.enabled ? 0 : null,
+            title: title,
+            content: content,
+            actions: [
+              TextButton(
+                onPressed: Get.back,
+                child: Text(
+                  '取消',
+                  style: TextStyle(color: ColorScheme.of(context).outline),
+                ),
               ),
-            ),
-            TextButton(
-              onPressed: () {
-                Get.back(result: true);
-                onConfirm?.call();
-              },
-              child: const Text('确认'),
-            ),
-          ],
+              TextButton(
+                onPressed: () {
+                  Get.back(result: true);
+                  onConfirm?.call();
+                },
+                child: const Text('确认'),
+              ),
+            ],
+          ),
         ),
       ) ??
       false;

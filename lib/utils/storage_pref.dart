@@ -534,6 +534,9 @@ abstract final class Pref {
   static bool get isPureBlackTheme =>
       _setting.get(SettingBoxKey.isPureBlackTheme, defaultValue: false);
 
+  static bool get liquidGlass =>
+      _setting.get(SettingBoxKey.liquidGlass, defaultValue: true);
+
   static bool get antiGoodsDyn =>
       _setting.get(SettingBoxKey.antiGoodsDyn, defaultValue: false);
 

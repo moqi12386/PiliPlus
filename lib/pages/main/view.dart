@@ -3,6 +3,9 @@ import 'dart:io';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/floating_navigation_bar.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
+import 'package:PiliPlus/common/widgets/glass/glass_config.dart';
+import 'package:PiliPlus/common/widgets/glass/glass_style.dart';
+import 'package:PiliPlus/common/widgets/glass/liquid_glass.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/main_layout.dart';
 import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
@@ -169,19 +172,26 @@ class _MainAppState extends PopScopeState<MainApp>
         );
       } else if (_mainController.enableMYBar) {
         bottomNav = Obx(
-          () => NavigationBar(
-            maintainBottomViewPadding: true,
-            onDestinationSelected: _mainController.setIndex,
-            selectedIndex: _mainController.selectedIndex.value,
-            destinations: _mainController.navigationBars
-                .map(
-                  (e) => NavigationDestination(
-                    label: e.label,
-                    icon: _buildIcon(type: e),
-                    selectedIcon: _buildIcon(type: e, selected: true),
-                  ),
-                )
-                .toList(),
+          () => LiquidGlass(
+            style: GlassStyle.navBar,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+            child: NavigationBar(
+              backgroundColor: GlassConfig.enabled ? Colors.transparent : null,
+              surfaceTintColor: GlassConfig.enabled ? Colors.transparent : null,
+              elevation: GlassConfig.enabled ? 0 : null,
+              maintainBottomViewPadding: true,
+              onDestinationSelected: _mainController.setIndex,
+              selectedIndex: _mainController.selectedIndex.value,
+              destinations: _mainController.navigationBars
+                  .map(
+                    (e) => NavigationDestination(
+                      label: e.label,
+                      icon: _buildIcon(type: e),
+                      selectedIcon: _buildIcon(type: e, selected: true),
+                    ),
+                  )
+                  .toList(),
+            ),
           ),
         );
       } else {

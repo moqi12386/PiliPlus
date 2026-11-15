@@ -272,6 +272,12 @@ flutter:
     - path: assets/images/paycoins/
     - path: assets/shaders/
 
+  # Liquid glass shaders, ported from Kyant0/AndroidLiquidGlass.
+  # See lib/common/widgets/glass/ for the Dart side.
+  shaders:
+    - assets/shaders/liquid_glass_refraction.frag
+    - assets/shaders/liquid_glass_highlight.frag
+
   fonts:
     - family: digital_id_num
       fonts:

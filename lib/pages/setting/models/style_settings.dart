@@ -6,6 +6,7 @@ import 'package:PiliPlus/common/widgets/custom_toast.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/emote_tooltip.dart'
     show enableEmoteTooltip;
+import 'package:PiliPlus/common/widgets/glass/glass_config.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/common/widgets/scale_app.dart';
@@ -360,6 +361,19 @@ List<SettingsModel> get styleSettings => [
       if (ThemeUtils.isDarkMode || Pref.darkVideoPage) {
         Get.updateMyAppTheme();
       }
+    },
+  ),
+  SwitchModel(
+    leading: const Icon(Icons.blur_on),
+    title: '液态玻璃',
+    subtitle:
+        '底部导航、搜索栏、弹层与播放器控件使用液态玻璃材质\n'
+        '（折射效果需要 Impeller 渲染后端，否则自动降级为磨砂玻璃）',
+    setKey: SettingBoxKey.liquidGlass,
+    defaultVal: true,
+    onChanged: (value) {
+      GlassConfig.enabled = value;
+      Get.updateMyAppTheme();
     },
   ),
   NormalModel(

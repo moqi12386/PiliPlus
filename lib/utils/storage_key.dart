@@ -245,6 +245,7 @@ abstract final class SettingBoxKey {
       useSideBar = 'useSideBar',
       hideSideBarLabel = 'hideSideBarLabel',
       enableMYBar = 'enableMYBar',
+      liquidGlass = 'liquidGlass',
       hideTopBar = 'hideSearchBar',
       hideBottomBar = 'hideTabBar',
       barHideType = 'barHideType',

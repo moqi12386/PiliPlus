@@ -1,5 +1,8 @@
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/custom_height_widget.dart';
+import 'package:PiliPlus/common/widgets/glass/glass_config.dart';
+import 'package:PiliPlus/common/widgets/glass/glass_style.dart';
+import 'package:PiliPlus/common/widgets/glass/liquid_glass.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:PiliPlus/pages/common/common_page.dart';
@@ -147,41 +150,47 @@ class _HomePageState extends CommonPageState<HomePage>
     return Expanded(
       child: SizedBox(
         height: 44,
-        child: Material(
+        child: LiquidGlass(
+          style: GlassStyle.pill,
           borderRadius: borderRadius,
-          color: _colorScheme.onSecondaryContainer.withValues(alpha: 0.05),
-          child: InkWell(
+          child: Material(
             borderRadius: borderRadius,
-            splashColor: _colorScheme.primaryContainer.withValues(
-              alpha: 0.3,
-            ),
-            onTap: () => Get.toNamed(
-              '/search',
-              parameters: _homeController.enableSearchWord
-                  ? {'hintText': _homeController.defaultSearch.value}
-                  : null,
-            ),
-            child: Row(
-              children: [
-                const SizedBox(width: 14),
-                Icon(
-                  Icons.search_outlined,
-                  color: _colorScheme.onSecondaryContainer,
-                  semanticLabel: '搜索',
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Obx(
-                    () => Text(
-                      _homeController.defaultSearch.value,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: _colorScheme.outline),
+            color: GlassConfig.enabled
+                ? Colors.transparent
+                : _colorScheme.onSecondaryContainer.withValues(alpha: 0.05),
+            child: InkWell(
+              borderRadius: borderRadius,
+              splashColor: _colorScheme.primaryContainer.withValues(
+                alpha: 0.3,
+              ),
+              onTap: () => Get.toNamed(
+                '/search',
+                parameters: _homeController.enableSearchWord
+                    ? {'hintText': _homeController.defaultSearch.value}
+                    : null,
+              ),
+              child: Row(
+                children: [
+                  const SizedBox(width: 14),
+                  Icon(
+                    Icons.search_outlined,
+                    color: _colorScheme.onSecondaryContainer,
+                    semanticLabel: '搜索',
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Obx(
+                      () => Text(
+                        _homeController.defaultSearch.value,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(color: _colorScheme.outline),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 5),
-              ],
+                  const SizedBox(width: 5),
+                ],
+              ),
             ),
           ),
         ),
