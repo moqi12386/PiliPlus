@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/style.dart';
+import 'package:PiliPlus/common/widgets/glass/glass_style.dart';
+import 'package:PiliPlus/common/widgets/glass/liquid_glass.dart';
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
@@ -121,21 +123,32 @@ class _MediaPageState extends CommonPageState<MinePage>
               child: InkWell(
                 onTap: e.onTap,
                 borderRadius: Style.mdRadius,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 80),
-                  child: AspectRatio(
-                    aspectRatio: 1,
-                    child: Column(
-                      spacing: 6,
-                      mainAxisSize: .min,
-                      mainAxisAlignment: .center,
-                      children: [
-                        Icon(e.icon, color: primary),
-                        Text(
-                          e.title,
-                          style: const TextStyle(fontSize: 13),
-                        ),
-                      ],
+                child: LiquidGlass(
+                  style: GlassStyle.pill.copyWith(
+                    blurSigma: 10,
+                    refractionHeight: 14,
+                    refractionAmount: 10,
+                    tint: Theme.of(
+                      context,
+                    ).colorScheme.surface.withValues(alpha: 0.16),
+                  ),
+                  borderRadius: Style.mdRadius,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 80),
+                    child: AspectRatio(
+                      aspectRatio: 1,
+                      child: Column(
+                        spacing: 6,
+                        mainAxisSize: .min,
+                        mainAxisAlignment: .center,
+                        children: [
+                          Icon(e.icon, color: primary),
+                          Text(
+                            e.title,
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
