@@ -537,6 +537,11 @@ abstract final class Pref {
   static bool get liquidGlass =>
       _setting.get(SettingBoxKey.liquidGlass, defaultValue: true);
 
+  /// Puts a round search action at the right end of the bottom navigation and
+  /// hides the home search pill (plus the avatar) instead.
+  static bool get searchInBottomBar =>
+      _setting.get(SettingBoxKey.searchInBottomBar, defaultValue: false);
+
   static bool get antiGoodsDyn =>
       _setting.get(SettingBoxKey.antiGoodsDyn, defaultValue: false);
 

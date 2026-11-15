@@ -3,9 +3,7 @@ import 'dart:io';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/floating_navigation_bar.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
-import 'package:PiliPlus/common/widgets/glass/glass_config.dart';
-import 'package:PiliPlus/common/widgets/glass/glass_style.dart';
-import 'package:PiliPlus/common/widgets/glass/liquid_glass.dart';
+import 'package:PiliPlus/common/widgets/glass/liquid_navigation_bar.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/main_layout.dart';
 import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
@@ -20,6 +18,7 @@ import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/mobile_observer.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -172,25 +171,36 @@ class _MainAppState extends PopScopeState<MainApp>
         );
       } else if (_mainController.enableMYBar) {
         bottomNav = Obx(
-          () => LiquidGlass(
-            style: GlassStyle.navBar,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
-            child: NavigationBar(
-              backgroundColor: GlassConfig.enabled ? Colors.transparent : null,
-              surfaceTintColor: GlassConfig.enabled ? Colors.transparent : null,
-              elevation: GlassConfig.enabled ? 0 : null,
-              maintainBottomViewPadding: true,
-              onDestinationSelected: _mainController.setIndex,
-              selectedIndex: _mainController.selectedIndex.value,
+          () => Padding(
+            // Floating capsule: keep it off the screen edges and clear of the
+            // system navigation bar.
+            padding: EdgeInsets.only(
+              left: 8,
+              right: 8,
+              bottom: MediaQuery.viewPaddingOf(context).bottom + 8,
+            ),
+            child: LiquidNavigationBar(
               destinations: _mainController.navigationBars
                   .map(
-                    (e) => NavigationDestination(
+                    (e) => LiquidNavDestination(
                       label: e.label,
                       icon: _buildIcon(type: e),
                       selectedIcon: _buildIcon(type: e, selected: true),
                     ),
                   )
                   .toList(),
+              selectedIndex: _mainController.selectedIndex.value,
+              onDestinationSelected: _mainController.setIndex,
+              trailing: Pref.searchInBottomBar
+                  ? LiquidNavAction(
+                      icon: const Icon(
+                        Icons.search_outlined,
+                        semanticLabel: '搜索',
+                      ),
+                      tooltip: '搜索',
+                      onPressed: () => Get.toNamed('/search'),
+                    )
+                  : null,
             ),
           ),
         );

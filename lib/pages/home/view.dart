@@ -10,6 +10,7 @@ import 'package:PiliPlus/pages/home/controller.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -96,13 +97,20 @@ class _HomePageState extends CommonPageState<HomePage>
 
   Widget customAppBar() {
     const padding = EdgeInsets.fromLTRB(14, 6, 14, 0);
+    // When the search moves into the bottom navigation, the pill and the avatar
+    // both leave the header; the message badge keeps its place on the right.
+    final searchAtBottom = Pref.searchInBottomBar;
     final child = Row(
       children: [
-        searchBar(),
+        if (searchAtBottom) const Spacer() else searchBar(),
         const SizedBox(width: 4),
         msgBadge(_mainController),
         const SizedBox(width: 8),
-        userAvatar(colorScheme: _colorScheme, mainController: _mainController),
+        if (!searchAtBottom)
+          userAvatar(
+            colorScheme: _colorScheme,
+            mainController: _mainController,
+          ),
       ],
     );
     if (_homeController.hideTopBar) {

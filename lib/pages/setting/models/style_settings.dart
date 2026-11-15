@@ -376,6 +376,14 @@ List<SettingsModel> get styleSettings => [
       Get.updateMyAppTheme();
     },
   ),
+  SwitchModel(
+    leading: const Icon(Icons.search_outlined),
+    title: '搜索栏放在底栏',
+    subtitle: '把搜索收进底部导航右侧并缩成圆形图标；此时首页搜索框与头像隐藏',
+    setKey: SettingBoxKey.searchInBottomBar,
+    defaultVal: false,
+    onChanged: (value) => Get.updateMyAppTheme(),
+  ),
   NormalModel(
     onTap: (context, setState) => Get.toNamed('/colorSetting'),
     leading: const Icon(Icons.color_lens_outlined),
