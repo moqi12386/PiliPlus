@@ -39,6 +39,31 @@ Flutter 部件当材质用。幸运的是 Flutter 里存在一一对应的能力
 
 所以移植的产物是：**两个 .frag 着色器 + 一个 Dart 组件库**，不引入任何新依赖。
 
+### 1.1 为什么不能"直接引入依赖"
+
+`backdrop` 模块的构建脚本里是 `kotlin.multiplatform` + `kotlin.compose` +
+`jetbrains.compose`，也就是说它是一个 **Compose 库**，没有发布到 Maven 的坐标（仓库里只有
+本地 `:backdrop` 模块，另有一个 `io.github.kyant0:shapes` 才是真正发布的）。即便把它以
+源码模块引进 Gradle、再用 `AndroidView`（PlatformView）在 Flutter 里承载一个 Compose
+视图，仍然差最关键的一件东西：**backdrop**。
+
+原实现的玻璃是这样拿到"背后内容"的：
+
+```kotlin
+val tabsBackdrop = rememberLayerBackdrop()   // 把页面录进一个 Compose GraphicsLayer
+Modifier.drawBackdrop(backdrop = tabsBackdrop, effects = { lens(...) })
+```
+
+`Backdrop` 必须是 **Compose 自己绘制过的图层**。而 PiliPlus 的页面内容由 Flutter 引擎画在
+另一块 surface 上，Android 的 `RenderEffect` 只能读"自己这一层"的像素，读不到别的渲染
+引擎的 surface。所以 PlatformView 里的 Compose 玻璃会对着**空图层**做折射 —— 结果不是
+"效果差一点"，而是**完全没有背景可折射**。
+
+真正的依赖集成只有一条路：把 Flutter 页面截屏成 `ImageBitmap`，每帧通过 platform channel
+喂给 Compose 的 `CanvasBackdrop`，让原库对这张**静态图**做它自己的着色器。代价是每帧一次
+全屏截图 + 跨引擎传输，滚动时玻璃里是滞后一帧的画面（会看到"玻璃里的内容跟不上"）。
+这条路能跑通，但很重，所以默认实现仍是下面的移植版。
+
 ---
 
 ## 2. 目录结构
@@ -210,7 +235,7 @@ LiquidGlass(
 | 界面 | 文件 | 说明 |
 | --- | --- | --- |
 | 底部导航 | `lib/common/widgets/glass/liquid_navigation_bar.dart` | 重写为移植版液态胶囊（第 6.2 节） |
-| 底部导航（悬浮款） | `lib/common/widgets/floating_navigation_bar.dart` | 超椭圆药丸外层换成玻璃，描边交给玻璃高光 |
+| 悬浮底栏 | `lib/pages/main/view.dart` | 原有「悬浮底栏」开关现在只是把胶囊收窄居中（maxWidth 420），组件仍是这套玻璃底栏 |
 | 搜索进底栏 | `lib/pages/main/view.dart` + `lib/pages/home/view.dart` | 圆形玻璃搜索键挂在胶囊右端，首页搜索条与头像隐藏 |
 | 功能卡片 | `lib/pages/mine/view.dart` | 我的页方形功能入口改成玻璃片，有壁纸时折射照片 |
 | 首页搜索条 | `lib/pages/home/view.dart` | 44 高的胶囊玻璃，替换原来的 5% 半透明填充 |
@@ -403,3 +428,32 @@ flutter test test/glass/liquid_glass_shader_test.dart
   描边上保留，SDF 仍按普通圆角计算。
 - 底部弹层的玻璃补丁**只在 android 平台上应用**（自定义底栏补丁本身分平台），
   iOS/桌面仍为原样式。
+
+---
+
+## 10. 构建与签名
+
+CI 的 `build.yml` 只在存在 `SIGN_KEYSTORE_BASE64` 等 secret 时才写 `android/key.properties`；
+这个 fork 没有配 secret，于是 Gradle 走到 `signingConfig = config ?: signingConfigs["debug"]`，
+而 **debug keystore 是每个 runner 现场生成的**。结果就是每次构建签名都不同，装新版必须先
+卸载旧版。
+
+修法是把这个固定密钥随仓库提交（`.gitignore` 里的 `*.jks` / `key.properties` 用 `-f` 加入）：
+
+```
+android/app/glass-release.jks     RSA 2048，有效期 10000 天
+android/key.properties            storeFile=glass-release.jks / alias=glass
+```
+
+证书 SHA-256（DER）：
+
+```
+EEC035F168F6B7A9618C371515368755B96B4B9821666700A399C261DDF34ADA
+```
+
+验证方式：从构建产物里取出 `META-INF/CERT.RSA`，用 `SignedCms` 解析后算证书指纹，与上面的
+值比对 —— 一致就说明这一版用的正是这把钥匙。
+
+> ⚠️ 密钥和口令都在仓库里，等同于公开。**不要用这把钥匙上架应用商店**；任何拿到仓库的人
+> 都能为这个 applicationId 签出"更新"。如果以后要换钥匙，删掉这两个文件、改用自己的
+> keystore 并通过 CI secret 注入即可（那时 `key.properties` 由 CI 生成，不再需要提交）。
