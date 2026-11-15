@@ -6,6 +6,7 @@ import 'package:PiliPlus/common/widgets/back_detector.dart';
 import 'package:PiliPlus/common/widgets/custom_toast.dart';
 import 'package:PiliPlus/common/widgets/glass/glass_config.dart';
 import 'package:PiliPlus/common/widgets/glass/glass_shaders.dart';
+import 'package:PiliPlus/common/widgets/glass/wallpaper.dart';
 import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
 import 'package:PiliPlus/common/widgets/scale_app.dart';
 import 'package:PiliPlus/common/widgets/scroll_behavior.dart';
@@ -355,13 +356,16 @@ class MyApp extends StatelessWidget {
         child: child!,
       );
     }
+    // Wallpaper sits behind everything, so glass surfaces have something to
+    // refract. It is a no-op unless the user picked an image.
+    final content = WallpaperLayer(child: child);
     if (PlatformUtils.isDesktop) {
       return BackDetector(
         onBack: _onBack,
-        child: child,
+        child: content,
       );
     }
-    return child;
+    return content;
   }
 
   /// from [DynamicColorBuilderState.initPlatformState]

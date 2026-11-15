@@ -1,12 +1,16 @@
 import 'dart:io';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:PiliPlus/common/widgets/color_palette.dart';
 import 'package:PiliPlus/common/widgets/custom_toast.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/emote_tooltip.dart'
     show enableEmoteTooltip;
 import 'package:PiliPlus/common/widgets/glass/glass_config.dart';
+import 'package:PiliPlus/common/widgets/glass/wallpaper.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/common/widgets/scale_app.dart';
@@ -383,6 +387,12 @@ List<SettingsModel> get styleSettings => [
     setKey: SettingBoxKey.searchInBottomBar,
     defaultVal: false,
     onChanged: (value) => Get.updateMyAppTheme(),
+  ),
+  NormalModel(
+    onTap: _chooseWallpaper,
+    leading: const Icon(Icons.wallpaper_outlined),
+    title: '自定义壁纸',
+    getSubtitle: () => Wallpaper.active ? '已启用，点按更换或移除' : '选一张图，用来观察玻璃的折射效果',
   ),
   NormalModel(
     onTap: (context, setState) => Get.toNamed('/colorSetting'),
@@ -978,5 +988,63 @@ Future<void> _showMemberTabDialog(
   if (res != null) {
     await GStorage.setting.put(SettingBoxKey.memberTab, res.index);
     setState();
+  }
+}
+
+/// Picks a wallpaper (or removes the current one) and re-applies the theme so
+/// page surfaces turn transparent and glass has something to refract.
+Future<void> _chooseWallpaper(
+  BuildContext context,
+  VoidCallback setState,
+) async {
+  if (Wallpaper.active) {
+    final action = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('自定义壁纸'),
+        content: const Text('壁纸已经启用。要换一张，还是移除？'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: 'remove'),
+            child: const Text('移除'),
+          ),
+          TextButton(
+            onPressed: () => Get.back(result: 'replace'),
+            child: const Text('更换'),
+          ),
+        ],
+      ),
+    );
+    if (action == null) {
+      return;
+    }
+    if (action == 'remove') {
+      Pref.wallpaperPath = null;
+      Get.updateMyAppTheme();
+      setState();
+      return;
+    }
+  }
+
+  final picked = await ImagePicker().pickImage(
+    source: ImageSource.gallery,
+    maxWidth: 2560,
+    maxHeight: 2560,
+  );
+  if (picked == null) {
+    return;
+  }
+  try {
+    final dir = await getApplicationSupportDirectory();
+    final target = File('${dir.path}/wallpaper_${picked.name}');
+    await target.writeAsBytes(await picked.readAsBytes(), flush: true);
+    Pref.wallpaperPath = target.path;
+    Get.updateMyAppTheme();
+    setState();
+  } catch (e) {
+    if (kDebugMode) {
+      debugPrint('wallpaper error: $e');
+    }
+    SmartDialog.showToast('壁纸设置失败：$e');
   }
 }

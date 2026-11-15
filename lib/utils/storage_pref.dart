@@ -542,6 +542,17 @@ abstract final class Pref {
   static bool get searchInBottomBar =>
       _setting.get(SettingBoxKey.searchInBottomBar, defaultValue: false);
 
+  /// Absolute path of the user-picked wallpaper, null when not configured.
+  static String? get wallpaperPath => _setting.get(SettingBoxKey.wallpaperPath);
+
+  static set wallpaperPath(String? path) {
+    if (path == null) {
+      _setting.delete(SettingBoxKey.wallpaperPath);
+    } else {
+      _setting.put(SettingBoxKey.wallpaperPath, path);
+    }
+  }
+
   static bool get antiGoodsDyn =>
       _setting.get(SettingBoxKey.antiGoodsDyn, defaultValue: false);
 

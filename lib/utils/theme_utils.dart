@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/glass/glass_config.dart';
+import 'package:PiliPlus/common/widgets/glass/wallpaper.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/font_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -174,10 +175,22 @@ abstract final class ThemeUtils {
         },
       ),
     );
-    if (isDark && Pref.isPureBlackTheme) {
-      return darkenTheme(theme);
+    final resolved = isDark && Pref.isPureBlackTheme
+        ? darkenTheme(theme)
+        : theme;
+    return _withWallpaper(resolved);
+  }
+
+  /// A user wallpaper only shows through when the page surfaces stop painting an
+  /// opaque colour. Nothing else about the theme changes.
+  static ThemeData _withWallpaper(ThemeData theme) {
+    if (!Wallpaper.active) {
+      return theme;
     }
-    return theme;
+    return theme.copyWith(
+      scaffoldBackgroundColor: Colors.transparent,
+      canvasColor: Colors.transparent,
+    );
   }
 
   static ThemeData darkenTheme(ThemeData theme) {

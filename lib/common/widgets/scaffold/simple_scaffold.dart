@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:PiliPlus/common/widgets/glass/wallpaper.dart';
 import 'package:PiliPlus/common/widgets/slotted_layout_helper.dart';
 import 'package:flutter/rendering.dart' show ChildLayoutHelper;
 import 'package:material_ui/material_ui.dart';
@@ -30,7 +31,9 @@ class SimpleScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: backgroundColor,
+      // With a wallpaper on, the page surface steps aside so the photo shows
+      // through and glass surfaces have something to blur.
+      color: backgroundColor ?? (Wallpaper.active ? Colors.transparent : null),
       child: ScaffoldLayout(
         fab: fab,
         appBar: appBar,
