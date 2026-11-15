@@ -275,8 +275,8 @@ flutter:
   # Liquid glass shaders, ported from Kyant0/AndroidLiquidGlass.
   # See lib/common/widgets/glass/ for the Dart side.
   shaders:
-    - assets/shaders/liquid_glass_refraction.frag
-    - assets/shaders/liquid_glass_highlight.frag
+    - assets/glass_shaders/liquid_glass_refraction.frag
+    - assets/glass_shaders/liquid_glass_highlight.frag
 
   fonts:
     - family: digital_id_num

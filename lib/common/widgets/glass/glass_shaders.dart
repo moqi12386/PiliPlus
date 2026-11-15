@@ -1,7 +1,7 @@
 // Liquid glass shader bootstrap.
 //
-// The GLSL lives in `assets/shaders/liquid_glass_refraction.frag` and
-// `assets/shaders/liquid_glass_highlight.frag`; both are ported from
+// The GLSL lives in `assets/glass_shaders/liquid_glass_refraction.frag` and
+// `assets/glass_shaders/liquid_glass_highlight.frag`; both are ported from
 // Kyant0/AndroidLiquidGlass (Apache-2.0), see the header of each file.
 //
 // `ui.FragmentProgram.fromAsset` is async, so [load] must be awaited once during
@@ -14,9 +14,9 @@ import 'package:flutter/foundation.dart';
 
 abstract final class GlassShaders {
   static const String refractionAsset =
-      'assets/shaders/liquid_glass_refraction.frag';
+      'assets/glass_shaders/liquid_glass_refraction.frag';
   static const String highlightAsset =
-      'assets/shaders/liquid_glass_highlight.frag';
+      'assets/glass_shaders/liquid_glass_highlight.frag';
 
   static ui.FragmentProgram? _refractionProgram;
   static ui.FragmentProgram? _highlightProgram;

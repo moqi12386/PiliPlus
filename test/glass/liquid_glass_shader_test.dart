@@ -138,7 +138,7 @@ void _refractionUniforms(
 
 Future<ui.FragmentShader> _rimShader({required bool ambient}) async {
   final program = await ui.FragmentProgram.fromAsset(
-    'assets/shaders/liquid_glass_highlight.frag',
+    'assets/glass_shaders/liquid_glass_highlight.frag',
   );
   return program.fragmentShader()
     ..setFloat(0, _radius)
@@ -215,7 +215,7 @@ void main() {
 
   test('refraction keeps the centre of the glass undistorted', () async {
     final program = await ui.FragmentProgram.fromAsset(
-      'assets/shaders/liquid_glass_refraction.frag',
+      'assets/glass_shaders/liquid_glass_refraction.frag',
     );
     final shader = program.fragmentShader();
     _refractionUniforms(
@@ -243,7 +243,7 @@ void main() {
 
   test('refraction bends the backdrop inside the lens band', () async {
     final program = await ui.FragmentProgram.fromAsset(
-      'assets/shaders/liquid_glass_refraction.frag',
+      'assets/glass_shaders/liquid_glass_refraction.frag',
     );
     final shader = program.fragmentShader();
     _refractionUniforms(
@@ -272,7 +272,7 @@ void main() {
 
   test('dispersion separates colour channels in the lens band', () async {
     final program = await ui.FragmentProgram.fromAsset(
-      'assets/shaders/liquid_glass_refraction.frag',
+      'assets/glass_shaders/liquid_glass_refraction.frag',
     );
     final shader = program.fragmentShader();
     _refractionUniforms(

@@ -1,3 +1,5 @@
+import 'package:PiliPlus/common/widgets/glass/glass_frost.dart';
+import 'package:PiliPlus/common/widgets/glass/glass_style.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -51,17 +53,22 @@ class AppBarAni extends StatelessWidget {
   Widget build(BuildContext context) {
     return SlideTransition(
       position: controller.drive(isTop ? _topPos : _bottomPos),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: isTop ? _topDecoration : _bottomDecoration,
+      // A frosted backdrop under the existing gradient: the gradient keeps the
+      // glyphs readable, the blur makes the video read as "behind glass".
+      child: GlassFrost(
+        style: GlassStyle.player,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: isTop ? _topDecoration : _bottomDecoration,
+          ),
+          child: removeSafeArea
+              ? child
+              : ViewSafeArea(
+                  left: isFullScreen,
+                  right: isFullScreen,
+                  child: child,
+                ),
         ),
-        child: removeSafeArea
-            ? child
-            : ViewSafeArea(
-                left: isFullScreen,
-                right: isFullScreen,
-                child: child,
-              ),
       ),
     );
   }

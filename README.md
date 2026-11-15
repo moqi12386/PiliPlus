@@ -27,6 +27,16 @@
 
 <br/>
 
+## 液态玻璃（本 fork 的改动）
+
+本 fork 在官方 PiliPlus 之上移植了 [Kyant0/AndroidLiquidGlass](https://github.com/Kyant0/AndroidLiquidGlass)
+的液态玻璃材质：底部导航、首页搜索条、弹窗与播放器控制层使用玻璃表面，可通过
+「设置 → 外观设置 → 液态玻璃」开关关闭。
+
+- 着色器（折射 / 色散 / 边缘高光）按 Apache-2.0 从原项目 1:1 移植为 Flutter fragment shader
+- 折射需要 Impeller 渲染后端，默认配置下自动降级为磨砂玻璃
+- 技术细节、接入方式与已知限制见 [docs/liquid-glass.md](docs/liquid-glass.md)
+
 ## 适配平台
 
 - [x] Android
