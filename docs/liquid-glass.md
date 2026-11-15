@@ -218,6 +218,7 @@ LiquidGlass(
 | 底部弹层 | `lib/scripts/material/glass_bottom_sheet.patch` + `lib/utils/theme_utils.dart` | 框架层覆盖所有 `showModalBottomSheet` |
 | 标题栏（设置页） | `lib/pages/setting/view.dart` | 列表从栏下滚过，标题栏磨砂 |
 | 标题栏（搜索页） | `lib/pages/search/view.dart` | 建议/历史从栏下滚过 |
+| 卡片封面徽标 | `lib/common/widgets/badge.dart` | `PBadge(glass: true)`：时长角标压在图上是磨砂片 |
 | 设置开关 | `lib/pages/setting/models/style_settings.dart` | 外观设置里的「液态玻璃」开关 |
 
 开关持久化键：`SettingBoxKey.liquidGlass`（默认 `true`），由 `main.dart` 在首帧前读入
@@ -356,8 +357,9 @@ flutter test test/glass/liquid_glass_shader_test.dart
   「浮在内容之上」的固定元件，没有铺到列表卡片上。
 - **标题栏只接了设置页和搜索页**（第 6.1 节）：其余页面需要各自给滚动容器加顶部内边距，
   没法在渲染层通用解决。
-- **卡片与设置项没有单独做玻璃**：App 背景是纯色平铺，背后无内容可折射，玻璃只会变成
-  「换个底色」。要让它有意义，得先有背景图/壁纸类功能。
+- **卡片与设置项没有整体做玻璃**：App 背景是纯色平铺，背后无内容可折射，玻璃只会变成
+  「换个底色」。唯一例外是**卡片封面上的徽标**（时长/角标）—— 它压在封面图上，是卡片里
+  唯一真有内容在背后的位置，所以 `PBadge` 加了 `glass: true` 开关并在视频卡上启用。
 - 播放器控制层用的是磨砂（`GlassFrost`）而非折射：视频纹理上做实时透镜的开销与兼容性
   需要真机评估，因此保留原有渐变遮罩叠加模糊。
 - 圆角目前统一按 `BorderRadius` 处理，原实现的超椭圆（superellipse）只在悬浮底栏的
