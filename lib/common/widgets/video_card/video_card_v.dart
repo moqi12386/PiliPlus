@@ -119,6 +119,7 @@ class VideoCardV extends StatelessWidget {
                               right: 7,
                               size: .small,
                               type: .gray,
+                              glass: true,
                               text: DurationUtils.formatDuration(
                                 videoItem.duration,
                               ),

@@ -89,6 +89,7 @@ class VideoCardH extends StatelessWidget {
                                 right: 6,
                                 bottom: 8,
                                 type: .gray,
+                                glass: true,
                               ),
                               Positioned(
                                 left: 0,
@@ -111,6 +112,7 @@ class VideoCardH extends StatelessWidget {
                                 right: 6.0,
                                 bottom: 6.0,
                                 type: .gray,
+                                glass: true,
                               ),
                           ],
                         );

@@ -1,3 +1,6 @@
+import 'package:PiliPlus/common/widgets/glass/glass_config.dart';
+import 'package:PiliPlus/common/widgets/glass/glass_frost.dart';
+import 'package:PiliPlus/common/widgets/glass/glass_style.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
@@ -20,6 +23,11 @@ class PBadge extends StatelessWidget {
   final bool isBold;
   final double? textScaleFactor;
 
+  /// Draws the badge as a frosted chip instead of a flat fill. Only worth using
+  /// where the badge sits on top of imagery (cover art, player frames), because
+  /// elsewhere there is nothing behind it to blur.
+  final bool glass;
+
   const PBadge({
     super.key,
     required this.text,
@@ -34,6 +42,7 @@ class PBadge extends StatelessWidget {
     this.isBold = true,
     this.textScaleFactor,
     this.padding,
+    this.glass = false,
   });
 
   @override
@@ -87,12 +96,18 @@ class PBadge extends StatelessWidget {
         ? const .all(.circular(3))
         : const .all(.circular(4));
 
+    final useGlass = glass && GlassConfig.enabled;
+
     Widget content = Container(
       padding: padding ?? defPaddingStyle,
       decoration: BoxDecoration(
         borderRadius: br,
-        color: bgColor,
-        border: .all(color: borderColor),
+        color: useGlass ? Colors.transparent : bgColor,
+        border: .all(
+          color: useGlass && borderColor == Colors.transparent
+              ? const Color(0x1FFFFFFF)
+              : borderColor,
+        ),
       ),
       child: Text(
         text!,
@@ -102,6 +117,9 @@ class PBadge extends StatelessWidget {
           fontSize: fontSize,
           color: color,
           fontWeight: isBold ? FontWeight.bold : null,
+          shadows: useGlass
+              ? const [Shadow(color: Color(0x66000000), blurRadius: 2)]
+              : null,
         ),
         strutStyle: StrutStyle(
           leading: 0,
@@ -111,6 +129,19 @@ class PBadge extends StatelessWidget {
         ),
       ),
     );
+
+    if (useGlass) {
+      // A dark tint keeps white glyphs readable over arbitrary cover art.
+      content = GlassFrost(
+        style: GlassStyle.pill.copyWith(
+          blurSigma: 10,
+          tint: Colors.black.withValues(alpha: 0.28),
+          sheenOpacity: 0.04,
+        ),
+        borderRadius: br,
+        child: content,
+      );
+    }
     if (isStack) {
       return Positioned(
         top: top,

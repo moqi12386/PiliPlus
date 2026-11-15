@@ -1,5 +1,5 @@
 diff --git a/lib/src/bottom_sheet.dart b/lib/src/bottom_sheet.dart
-index a74ca7b..cd96de2 100644
+index a74ca7b..a74466d 100644
 --- a/lib/src/bottom_sheet.dart
 +++ b/lib/src/bottom_sheet.dart
 @@ -6,7 +6,7 @@
@@ -11,16 +11,15 @@ index a74ca7b..cd96de2 100644
  
  import 'package:flutter/foundation.dart';
  import 'package:flutter/gestures.dart';
-@@ -392,11 +392,20 @@ class _BottomSheetState<T extends BottomSheet> extends State<T> {
+@@ -392,11 +392,19 @@ class _BottomSheetState<T extends BottomSheet> extends State<T> {
        }
      }
  
 +    // A fully transparent surface tint asks for a liquid glass sheet. Without
 +    // this patch the same theme value is merely a no-op tint.
-+    final bool glass =
-+        surfaceTintColor != null &&
-+        surfaceTintColor.a == 0.0 &&
-+        widget.surfaceTintColor == null;
++    // BottomSheet exposes no surfaceTintColor of its own, so the theme value is
++    // the only source here.
++    final bool glass = surfaceTintColor != null && surfaceTintColor.a == 0.0;
 +
      Widget bottomSheet = Material(
        key: _childKey,
@@ -35,7 +34,7 @@ index a74ca7b..cd96de2 100644
        shadowColor: shadowColor,
        shape: shape,
        clipBehavior: clipBehavior,
-@@ -417,6 +426,26 @@ class _BottomSheetState<T extends BottomSheet> extends State<T> {
+@@ -417,6 +425,26 @@ class _BottomSheetState<T extends BottomSheet> extends State<T> {
        ),
      );
  
