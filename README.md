@@ -30,11 +30,17 @@
 ## 液态玻璃（本 fork 的改动）
 
 本 fork 在官方 PiliPlus 之上移植了 [Kyant0/AndroidLiquidGlass](https://github.com/Kyant0/AndroidLiquidGlass)
-的液态玻璃材质：底部导航、首页搜索条、弹窗、弹出菜单与播放器控制层使用玻璃表面，可通过
-「设置 → 外观设置 → 液态玻璃」开关关闭。
+的液态玻璃材质，可通过「设置 → 外观设置」里的开关逐项控制。
 
-- 着色器（折射 / 色散 / 边缘高光）按 Apache-2.0 从原项目 1:1 移植为 Flutter fragment shader
+- **底部导航重写**：按原项目 `LiquidBottomTabs` 重写为液态胶囊 —— 玻璃容器 + 弹簧驱动的
+  第二层透镜药丸，移动时按速度挤压拉伸
+- **功能卡片**：我的页方形功能入口为玻璃片；视频卡封面角标为磨砂片
+- **搜索栏可放底栏**：收成胶囊右端的圆形玻璃键，此时首页搜索框与头像隐藏
+- **自定义壁纸**：给玻璃一块可折射的背景（关掉即恢复原样式）
+- **浮层**：弹窗、弹出菜单、底部弹层、播放器控制层；设置页/搜索页标题栏
+- 着色器（折射 / 色散 / 边缘高光）按 Apache-2.0 从原项目移植为 Flutter fragment shader
 - 折射需要 Impeller 渲染后端，默认配置下自动降级为磨砂玻璃
+- 包名改为 `com.moqi.piliplus.glass`、桌面名称「PiliPlus 玻璃」，**可与官方版同时安装**对比
 - 技术细节、接入方式与已知限制见 [docs/liquid-glass.md](docs/liquid-glass.md)
 
 ## 适配平台

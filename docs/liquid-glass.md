@@ -209,8 +209,10 @@ LiquidGlass(
 
 | 界面 | 文件 | 说明 |
 | --- | --- | --- |
-| 底部导航（M3 栏） | `lib/pages/main/view.dart` | 药丸上方圆角玻璃，导航栏自身背景置透明 |
+| 底部导航 | `lib/common/widgets/glass/liquid_navigation_bar.dart` | 重写为移植版液态胶囊（第 6.2 节） |
 | 底部导航（悬浮款） | `lib/common/widgets/floating_navigation_bar.dart` | 超椭圆药丸外层换成玻璃，描边交给玻璃高光 |
+| 搜索进底栏 | `lib/pages/main/view.dart` + `lib/pages/home/view.dart` | 圆形玻璃搜索键挂在胶囊右端，首页搜索条与头像隐藏 |
+| 功能卡片 | `lib/pages/mine/view.dart` | 我的页方形功能入口改成玻璃片，有壁纸时折射照片 |
 | 首页搜索条 | `lib/pages/home/view.dart` | 44 高的胶囊玻璃，替换原来的 5% 半透明填充 |
 | 确认弹窗 | `lib/common/widgets/dialog/dialog.dart` | `AlertDialog` 背景透明 + 玻璃容器 |
 | 播放器控制层 | `lib/plugin/pl_player/widgets/app_bar_ani.dart` | 渐变遮罩下加磨砂背板（`GlassFrost`） |
@@ -219,10 +221,44 @@ LiquidGlass(
 | 标题栏（设置页） | `lib/pages/setting/view.dart` | 列表从栏下滚过，标题栏磨砂 |
 | 标题栏（搜索页） | `lib/pages/search/view.dart` | 建议/历史从栏下滚过 |
 | 卡片封面徽标 | `lib/common/widgets/badge.dart` | `PBadge(glass: true)`：时长角标压在图上是磨砂片 |
-| 设置开关 | `lib/pages/setting/models/style_settings.dart` | 外观设置里的「液态玻璃」开关 |
+| 自定义壁纸 | `lib/common/widgets/glass/wallpaper.dart` | 背景照片 + 主题遮罩，玻璃终于有东西可折射（第 6.3 节） |
+| 设置开关 | `lib/pages/setting/models/style_settings.dart` | 液态玻璃 / 搜索栏放在底栏 / 自定义壁纸 |
 
 开关持久化键：`SettingBoxKey.liquidGlass`（默认 `true`），由 `main.dart` 在首帧前读入
 `GlassConfig.enabled`，并预编译两个着色器。
+
+### 6.2 底栏：从 Material 换成移植实现
+
+原来的底栏是 `NavigationBar` 外面套一层模糊；现在换成按原项目
+`catalog/components/LiquidBottomTabs.kt` 重写的 `LiquidNavigationBar`：
+
+| 原实现 | 移植情况 |
+| --- | --- |
+| 胶囊容器：一层玻璃 + 白色/黑色 40% 染色 + 高光 | 已移植（`LiquidGlass` + `GlassStyle.navBar`） |
+| 选中药丸：第二个小玻璃透镜，弹簧驱动，按速度挤压/拉伸 | 已移植（`SpringSimulation` + 速度归一化后的 `scaleX/scaleY`） |
+| 选中项染色 + 放大 | 已移植（`IconTheme` + `AnimatedScale(1.08)`） |
+| 药丸采样「页面 + 一层隐藏的染色行」的组合背板，实现透镜放大图标 | **未移植**，见下 |
+| 拖动切换 + 面板反向位移 | 未移植（现有点击切换） |
+
+未移植的那条是硬限制：原项目把「页面背板」和「隐藏的染色行图层」组合成一个
+`Backdrop` 再喂给药丸，所以放大的是**图标本身**。Flutter 的 `ImageFilter` 只能绑定
+**一个**背板（引擎塞进来的那张），没法把某个 widget 图层拼进去。因此这里改成给选中项
+直接染色 + 轻微放大 —— 观感接近，但走的是「染色」而不是「透镜放大」。文件头注释里也写了
+这条差异，避免后来人以为漏了。
+
+### 6.3 壁纸：给玻璃一块可折射的背景
+
+玻璃要成立，背后必须有内容。PiliPlus 每个页面都铺一层不透明 surface，所以卡片、设置行、
+标题栏背后只有纯色，玻璃退化成「换个底色」。
+
+壁纸打开后：
+
+- `MaterialApp.builder` 里套一层 `WallpaperLayer`：照片 → 主题色遮罩（保文字对比度）→ 应用；
+- `SimpleScaffold` 与 `ThemeData.scaffoldBackgroundColor` 改为透明（包括 `darkenTheme`
+  之后重新覆盖），照片才能透出来；
+- 关掉壁纸时，所有 surface 完全回到原来的不透明行为，**没有任何样式残留**。
+
+遮罩不是可选项：随便一张照片上的文字对比度是不可控的，浅色/深色主题各用不同的遮罩厚度。
 
 ### 6.1 标题栏：为什么要动布局
 
