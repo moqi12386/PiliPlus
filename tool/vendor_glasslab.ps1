@@ -74,5 +74,27 @@ foreach ($rel in @(
     [System.IO.File]::WriteAllText($dest, (Get-Content $src -Raw), (New-Object System.Text.UTF8Encoding($false)))
 }
 
+# The upstream code imports `io.github.kyant0:shapes` (Capsule, RoundedRectangularShape).
+# That artifact drags in Compose 1.12, which in turn demands compileSdk 37. Neither
+# shape is essential: Capsule is a 50% RoundedCornerShape, and the lens code already
+# handles CornerBasedShape. Inline both instead of taking the dependency.
+$patched = 0
+Get-ChildItem (Join-Path $target 'com') -Recurse -File -Filter *.kt | ForEach-Object {
+    $text = [System.IO.File]::ReadAllText($_.FullName, [System.Text.Encoding]::UTF8)
+    $before = $text
+    $text = $text -replace "import com\.kyant\.shapes\.Capsule\r?\n", "import androidx.compose.foundation.shape.RoundedCornerShape`n"
+    $text = $text -replace "\bCapsule\(\)", "RoundedCornerShape(percent = 50)"
+    if ($_.Name -eq 'Lens.kt') {
+        $text = $text -replace "import com\.kyant\.shapes\.RoundedRectangularShape\r?\n", ''
+        $text = $text -replace "(?s)\s*is RoundedRectangularShape -> \{.*?\n        \}\r?\n", "`n"
+        $text = $text -replace "Only RoundedRectangularShape or CornerBasedShape", "Only CornerBasedShape"
+    }
+    if ($text -ne $before) {
+        [System.IO.File]::WriteAllText($_.FullName, $text, (New-Object System.Text.UTF8Encoding($false)))
+        $patched++
+    }
+}
+Write-Host "inlined shapes in $patched file(s)"
+
 $count = (Get-ChildItem (Join-Path $target 'com') -Recurse -File -Filter *.kt).Count
 Write-Host "vendored $count Kotlin files into glasslab/app/src/main/kotlin"
